@@ -1,0 +1,10 @@
+{
+  "name": "satisfactory-calculator",
+  "dependencies": {
+    "yaml": "^2.2.1",
+    "yargs": "github:yargs/yargs"
+  },
+  "scripts": {
+    "build": "node build.js"
+  }
+}
