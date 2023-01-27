@@ -3,7 +3,7 @@
 ## Usage
 
 1. Clone the repository and do `npm install`.
-2. In the “factories” directory, create a YAML file with the outputs you want to achieve. (See below for an example.)
+2. In the “requests” directory, create a YAML file with the outputs you want to achieve. (See below for an example.)
 3. Run the `build` script, passing the base name of your YAML file.
 
 ## Plans
@@ -20,7 +20,7 @@
 
 ### Input
 
-Saved to `./factories/steel-and-concrete.yml`:
+Saved to `./requests/steel-and-concrete.yml`:
 
 ```yaml
 steelBeam: 100

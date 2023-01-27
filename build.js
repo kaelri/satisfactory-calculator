@@ -10,14 +10,14 @@ function main() {
 	const jobs = getJobs();
 
 	const results = {
-		buildings: [],
+		factories: [],
 		resources: {},
 	}
 
 	while ( jobs.length ) {
 
 		const job  = jobs[0];
-		const item = data.map.get( job.item );
+		const item = data.map.get( job.itemID );
 
 		// Ignore raw materials (ore & power) for this step.
 		if ( item.type !== 'part' ) {
@@ -26,52 +26,50 @@ function main() {
 		}
 		
 		// Add the building required for this formula and record the total output needed.
-		const building = data.map.get( item.formula.building );
+		const building = data.map.get( item.formula.buildingID );
 
-		buildingConfig = {
-			jobIDs: [ job.jobID ],
-			building: building.name,
-			formula: item.formula,
+		const jobID = createID(6);
+
+		factory = {
+			jobIDs:       [ jobID ],
+			buildingID:   building.name,
+			formula:      item.formula,
 			destinations: [
 				{
-					jobID: job.parentID,
-					num:   job.num,
+					jobID: job.parentID || null,
+					num:   job.num      || 0,
 				}
 			]
 		}
 
-		results.buildings.push( buildingConfig );
+		results.factories.push( factory );
 
 		// Add required components to the jobs queue, where they will be processed recursively.
-		buildingConfig.formula.inputs.forEach( input => jobs.push({
-			jobID: createID(6),
-			parentID: job.jobID,
-			item: input.item,
-			num: 0, // default; will be updated in the next loop when real production values are calculated.
+		factory.formula.inputs.forEach( input => jobs.push({
+			itemID:     input.itemID,
+			parentID: jobID,
 		}));
 
 		jobs.shift();
 		
 	}
 
-	results.buildings = mergeBuildingConfigs( results.buildings );
-	results.buildings = populateBuildingConfigs( results.buildings );
+	results.factories = mergeFactories( results.factories );
+	results.factories = populateFactories( results.factories );
 
 	// Get raw materials & power requirements from generated list of required buildings.
-	results.buildings.forEach( buildingConfig => {
+	results.factories.forEach( factory => {
 
-		const building = data.map.get( buildingConfig.building );
+		factory.formula.inputs.forEach( input => {
 
-		buildingConfig.formula.inputs.forEach( input => {
-
-			const item = data.map.get( input.item );
+			const item = data.map.get( input.itemID );
 			if ( item.type === 'part' ) return;
 
 			if ( !results.resources[ item.name ] ) {
 				results.resources[ item.name ] = 0;
 			}
 
-			results.resources[ item.name ] += input.num * buildingConfig.scale;
+			results.resources[ item.name ] += input.num * factory.scale;
 
 		});
 
@@ -97,13 +95,13 @@ function getData() {
 			formula.inputs = formula.inputs.map( input => {
 				const itemName = Object.keys(input)[0];
 				return {
-					item: itemName,
+					itemID: itemName,
 					num: input[ itemName ],
 				}
 			});
 
 			formula.inputs.push({
-				item: 'power',
+				itemID: 'power',
 				num: building.power
 			});
 	
@@ -111,7 +109,7 @@ function getData() {
 			formula.outputs = formula.outputs.reduce( (_, output) => {
 				const itemName = Object.keys(output)[0];
 				return {
-					item: itemName,
+					itemID: itemName,
 					num: output[ itemName ],
 				}
 			}, null );
@@ -120,16 +118,16 @@ function getData() {
 	
 		});
 
-		building.formulas.forEach( buildingFormula => {
+		building.formulas.forEach( formula => {
 
-			if ( !buildingFormula.outputs.item ) return;
+			if ( !formula.outputs.itemID ) return;
 			
-			const itemName = buildingFormula.outputs.item;
+			const itemName = formula.outputs.itemID;
 			const item     = data.map.get( itemName );
 
 			// TODO: conversely, figure out how to choose the best formula for items that can be made multiple ways. For now, we assume each item has one and only one production method.
-			item.formula          = structuredClone( buildingFormula );
-			item.formula.building = building.name;
+			item.formula          = structuredClone( formula );
+			item.formula.buildingID = building.name;
 
 		});
 
@@ -141,76 +139,75 @@ function getData() {
 
 function getJobs() {
 
-	if ( !argv._.length ) throw Error('no-factory');
+	if ( !argv._.length ) throw Error('no-build');
 
 	const jobs = [];
 
-	const [ factoryID ] = argv._;
+	const [ buildID ] = argv._;
 
-	const factoryData = YAML.parse( fs.readFileSync( `./factories/${factoryID}.yml`, 'utf8' ) );
+	const buildData = YAML.parse( fs.readFileSync( `./builds/${buildID}.yml`, 'utf8' ) );
 
-	Object.keys( factoryData ).forEach( itemName => jobs.push({
-		jobID:    createID(6),
-		parentID: null,
-		item:     itemName,
-		num:      factoryData[ itemName ],
+	Object.keys( buildData ).forEach( itemName => jobs.push({
+		jobID: createID(6),
+		itemID:  itemName,
+		num:   buildData[ itemName ],
 	}));
 
 	return jobs;
 
 }
 
-function mergeBuildingConfigs( buildingConfigs ) {
+function mergeFactories( factories ) {
 
-	const buildingConfigsMerged = [];
+	const factoriesMerged = [];
 
-	buildingConfigs.forEach( buildingConfig => {
+	factories.forEach( factory => {
 
-		const existingConfig = buildingConfigsMerged.find( maybeConfig => ( buildingConfig.building === maybeConfig.building && buildingConfig.formula.outputs.item === maybeConfig.formula.outputs.item ) );
+		const existingConfig = factoriesMerged.find( maybeConfig => ( factory.buildingID === maybeConfig.buildingID && factory.formula.outputs.itemID === maybeConfig.formula.outputs.itemID ) );
 
 		if ( existingConfig ) {
 
-			existingConfig.jobIDs       = existingConfig.jobIDs.concat( buildingConfig.jobIDs );
-			existingConfig.destinations = existingConfig.destinations.concat( buildingConfig.destinations );
+			existingConfig.jobIDs       = existingConfig.jobIDs.concat( factory.jobIDs );
+			existingConfig.destinations = existingConfig.destinations.concat( factory.destinations );
 
 		} else {
 
-			buildingConfigsMerged.push( buildingConfig );
+			factoriesMerged.push( factory );
 
 		}
 
 	});
 
-	return buildingConfigsMerged;
+	return factoriesMerged;
 
 }
 
-function populateBuildingConfigs( buildingConfigs ) {
+function populateFactories( factories ) {
 
-	buildingConfigs.forEach( buildingConfig => {
+	factories.forEach( factory => {
 
-		buildingConfig.destinations.forEach( destination => {
+		factory.destinations.forEach( destination => {
 
 			if ( !destination.jobID ) return;
 
 			destination.num = 0;
 
-			const parentConfigs = buildingConfigs.filter( parent => parent.jobIDs.indexOf( destination.jobID ) !== -1 );
+			const parentConfigs = factories.filter( parent => parent.jobIDs.indexOf( destination.jobID ) !== -1 );
 			parentConfigs.forEach( parentConfig => {
-				const parentInput  = parentConfig.formula.inputs.find( input => input.item === buildingConfig.formula.outputs.item );
+				const parentInput  = parentConfig.formula.inputs.find( input => input.itemID === factory.formula.outputs.itemID );
 				destination.num += parentConfig.scale * parentInput.num;
 			})
 
 		});
 
-		buildingConfig.outputMinimum = buildingConfig.destinations.reduce( (outputTotal, destination) => outputTotal + destination.num, 0 );
-		buildingConfig.scale         = Math.ceil( buildingConfig.outputMinimum / buildingConfig.formula.outputs.num );
-		buildingConfig.outputTotal   = buildingConfig.scale * buildingConfig.formula.outputs.num;
-		buildingConfig.surplus       = Math.max( 0, buildingConfig.outputTotal - buildingConfig.outputMinimum );
+		factory.outputMinimum = factory.destinations.reduce( (outputTotal, destination) => outputTotal + destination.num, 0 );
+		factory.scale         = Math.ceil( factory.outputMinimum / factory.formula.outputs.num );
+		factory.outputTotal   = factory.scale * factory.formula.outputs.num;
+		factory.surplus       = Math.max( 0, factory.outputTotal - factory.outputMinimum );
 
 	});
 
-	return buildingConfigs;
+	return factories;
 
 }
 
@@ -222,8 +219,8 @@ try {
 	main();
 } catch (e) {
 	switch(e.message) {
-		case 'no-factory':
-			console.error('No factory provided. Please include a factory name, e.g.: `npm run build example`');
+		case 'no-build':
+			console.error('No build provided. Please include a build name, e.g.: `npm run build example`');
 		default:
 			throw e;
 	}
