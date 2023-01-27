@@ -4,7 +4,6 @@ const argv          = require('yargs/yargs')(process.argv.slice(2)).argv;
 const util          = require('util');
 const createID      = require('./modules/generate-hex-id');
 const { formatCLI } = require('./modules/cli-format');
-const { format } = require('path');
 
 const data = getData();
 
@@ -219,24 +218,42 @@ function displayResults( results ) {
 
 	lines.push( formatCLI('YOU WANT:', 'bold,white') );
 
+	// REQUESTS (“YOU WANT…’)
+	let resultsTable = [];
+
 	results.requests.forEach(request => {
 		const item = data.map.get(request.itemID);
-		lines.push( formatCLI('- ', 'black') + formatCLI(request.num, 'blue') + ' ' + formatCLI(item.displayName, 'red' ) );
+		resultsTable.push([ request.num, item.displayName ]);
+	});
+
+	resultsTable = spaceTableColumns( resultsTable, [ 'right', 'left' ] );
+
+	resultsTable.forEach(request => {
+		lines.push( formatCLI('- ', 'black') + formatCLI(request[0], 'blue') + ' ' + formatCLI(request[1], 'red' ) );
 	});
 
 	lines.push('');
 
+	// RESOURCES (“YOU NEED…’)
 	lines.push( formatCLI('YOU NEED:', 'bold,white') );
+
+	let resourcesTable = [];
 
 	Object.keys(results.resources).forEach( itemID => {
 		const item = data.map.get(itemID);
 		const resourceNum = results.resources[itemID];
-		lines.push( formatCLI('- ', 'black') + formatCLI(resourceNum, 'blue') + ' ' + formatCLI(item.displayName, 'red' ) );
+		resourcesTable.push([ resourceNum, item.displayName ]);
+	});
+
+	resourcesTable = spaceTableColumns( resourcesTable, [ 'right', 'left' ] );
+
+	resourcesTable.forEach( resource => {
+		lines.push( formatCLI('- ', 'black') + formatCLI(resource[0], 'blue') + ' ' + formatCLI(resource[1], 'red' ) );
 	});
 
 	lines.push('');
 
-	// FACTORIES
+	// FACTORIES (“YOU BUILD…’)
 	lines.push( formatCLI('YOU BUILD:', 'bold,white') );
 
 	let factoriesTable = [];
@@ -244,39 +261,61 @@ function displayResults( results ) {
 	results.factories.forEach(factory => {
 		const item     = data.map.get(factory.formula.outputs.itemID);
 		const building = data.map.get(factory.buildingID);
-		factoriesTable.push([ String(factory.scale), building.displayName, item.displayName ]);
+		factoriesTable.push([ factory.scale, building.displayName, item.displayName ]);
 	});
 
-	const factoriesTableColumns = factoriesTable.reduce( (columnSizes, factory) => {
-		factory.forEach( (value, c) => {
-			columnSizes[c] = Math.max( columnSizes[c], value.length );
-		});
-		return columnSizes;
-	}, [ 0, 0, 0 ] );
-
-	factoriesTable = factoriesTable.map( factory => {
-		factory = factory.map( (value, c) => {
-			const padSize = factoriesTableColumns[c] - value.length;
-			if ( padSize ) {
-				value = [
-					[...Array(padSize)].map( () => ' ' ).join(''),
-					value
-				];
-				if ( c > 0 ) value = value.reverse();
-				value = value.join('');
-			}
-			return value;
-		});
-		return factory;
-	});
+	factoriesTable = spaceTableColumns( factoriesTable, [ 'right', 'left', 'left' ] );
 
 	factoriesTable.forEach(factory => {
-		lines.push( formatCLI('- ', 'black') + formatCLI(factory[0], 'blue') + ' ' + formatCLI(factory[1], 'green' ) + ' ' + formatCLI( '=>', 'black' ) + ' ' + formatCLI(factory[2], 'red' ) );
+		lines.push( formatCLI('- ', 'black') + formatCLI(factory[0], 'blue') + ' ' + formatCLI(factory[1], 'green' ) + ' ' + formatCLI( '➜', 'black' ) + ' ' + formatCLI(factory[2], 'red' ) );
 	});
 
 	lines.push('');
 	
+	// DISPLAY
 	console.info(lines.join("\n"));
+
+}
+
+function spaceTableColumns( table, options ) {
+	
+	const columnSizes = table.reduce( (columnSizes, factory) => {
+		factory.forEach( (cell, c) => {
+			columnSizes[c] = Math.max( columnSizes[c], String(cell).length );
+		});
+		return columnSizes;
+	}, [ 0, 0, 0 ] );
+
+	table = table.map( row => {
+
+		row = row.map( (cell, c) => {
+
+			const padSize = Math.max( 0, columnSizes[c] - String(cell).length );
+
+			if ( padSize ) {
+
+				let cellParts = [
+					cell,
+					[...Array(padSize)].map( () => ' ' ).join('')
+				];
+
+				if ( options && options[c] && options[c] === 'right' ) {
+					cellParts = cellParts.reverse();
+				}
+
+				cell = cellParts.join('');
+
+			}
+
+			return cell;
+
+		});
+
+		return row;
+
+	});
+
+	return table;
 
 }
 
