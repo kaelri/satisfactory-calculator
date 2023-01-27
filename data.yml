@@ -1,5 +1,6 @@
 entities:
   - name: coalGenerator
+    displayName: Coal Generator
     type: building
     power: 0
     formulas:
@@ -9,6 +10,7 @@ entities:
         outputs:
           - power: 75
   - name: waterExtractor
+    displayName: Water Extractor
     type: building
     power: 20
     formulas:
@@ -18,6 +20,7 @@ entities:
         outputs:
           - water: 120
 #  - name: miner
+#    displayName: Miner
 #    type: building
 #    power: 5
 #    formulas:
@@ -25,6 +28,7 @@ entities:
 #        outputs:
 #         - iron: 60
   - name: miner2
+    displayName: Miner Mk2
     type: building
     power: 12
     formulas:
@@ -32,6 +36,9 @@ entities:
         outputs:
           - iron: 120
   - name: smelter
+    displayName: Smelter
+    type: building
+    power: 4
     formulas:
       - inputs:
           - iron: 30
@@ -42,6 +49,7 @@ entities:
         outputs:
           - copperIngot: 30
   - name: constructor
+    displayName: Constructor
     type: building
     power: 4
     formulas:
@@ -82,6 +90,7 @@ entities:
         outputs:
           - steelPipe: 20
   - name: assembler
+    displayName: Assembler
     type: building
     power: 15
     formulas:
@@ -106,6 +115,7 @@ entities:
         outputs:
           - encasedIndustrialBeam: 6
   - name: foundry
+    displayName: Foundry
     type: building
     power: 16
     formulas:
@@ -115,46 +125,68 @@ entities:
         outputs:
           - steelIngot: 45
   - name: power
+    displayName: Power
     type: power
   - name: coal
+    displayName: Coal
     type: ore
   - name: water
+    displayName: Water
     type: ore
   - name: iron
+    displayName: Iron Ore
     type: ore
   - name: copper
+    displayName: Copper Ore
     type: ore
   - name: limestone
+    displayName: Limestone
     type: ore
   - name: ironIngot
+    displayName: Iron Ingot
     type: part
   - name: copperIngot
+    displayName: Copper Ingot
     type: part
   - name: ironPlate
+    displayName: Iron Plate
     type: part
   - name: ironRod
+    displayName: Iron Rod
     type: part
   - name: screw
+    displayName: Screw
     type: part
   - name: wire
+    displayName: Wire
     type: part
   - name: cable
+    displayName: Cable
     type: part
   - name: copperSheet
+    displayName: Copper Sheet
     type: part
   - name: concrete
+    displayName: Concrete
     type: part
   - name: steelIngot
+    displayName: Steel Ingot
     type: part
   - name: steelBeam
+    displayName: Steel Beam
     type: part
   - name: steelPipe
+    displayName: Steel Pipe
     type: part
   - name: reinforcedIronPlate
+    displayName: Reinforced Iron Plate
     type: part
   - name: rotor
+    displayName: Rotor
     type: part
   - name: modularFrame
+    displayName: Modular Frame
     type: part
   - name: encasedIndustrialBeam
+    displayName: Encased Industrial Beam
     type: part

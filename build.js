@@ -1,30 +1,31 @@
-const fs       = require('fs');
-const YAML     = require('yaml');
-const argv     = require('yargs/yargs')(process.argv.slice(2)).argv;
-const util     = require('util')
-const createID = require('./modules/generate-hex-id');
+const fs            = require('fs');
+const YAML          = require('yaml');
+const argv          = require('yargs/yargs')(process.argv.slice(2)).argv;
+const util          = require('util');
+const createID      = require('./modules/generate-hex-id');
+const { formatCLI } = require('./modules/cli-format');
+const { format } = require('path');
+
+const data = getData();
 
 function main() {
-
-	const data = getData();
+	
 	const jobs = getJobs();
 
 	const results = {
+		requests:  structuredClone(jobs),
 		factories: [],
 		resources: {},
 	}
 
 	while ( jobs.length ) {
 
-		const job  = jobs[0];
+		const job  = jobs.shift();
 		const item = data.map.get( job.itemID );
 
 		// Ignore raw materials (ore & power) for this step.
-		if ( item.type !== 'part' ) {
-			jobs.shift();
-			continue;
-		}
-		
+		if ( item.type !== 'part' ) continue;
+
 		// Add the building required for this formula and record the total output needed.
 		const building = data.map.get( item.formula.buildingID );
 
@@ -50,8 +51,6 @@ function main() {
 			parentID: jobID,
 		}));
 
-		jobs.shift();
-		
 	}
 
 	results.factories = mergeFactories( results.factories );
@@ -75,8 +74,7 @@ function main() {
 
 	});
 
-	// TODO: Pretty up the display.
-	logAll( results );
+	displayResults( results );
 
 }
 
@@ -102,9 +100,9 @@ function getData() {
 
 			formula.inputs.push({
 				itemID: 'power',
-				num: building.power
+				num: building.power,
 			});
-	
+
 			// TODO: handle case where one formula outputs multiple items. This will be unfathomably annoying.
 			formula.outputs = formula.outputs.reduce( (_, output) => {
 				const itemName = Object.keys(output)[0];
@@ -115,13 +113,13 @@ function getData() {
 			}, null );
 
 			return formula;
-	
+
 		});
 
 		building.formulas.forEach( formula => {
 
 			if ( !formula.outputs.itemID ) return;
-			
+
 			const itemName = formula.outputs.itemID;
 			const item     = data.map.get( itemName );
 
@@ -148,9 +146,8 @@ function getJobs() {
 	const buildData = YAML.parse( fs.readFileSync( `./builds/${buildID}.yml`, 'utf8' ) );
 
 	Object.keys( buildData ).forEach( itemName => jobs.push({
-		jobID: createID(6),
-		itemID:  itemName,
-		num:   buildData[ itemName ],
+		itemID: itemName,
+		num:    buildData[ itemName ],
 	}));
 
 	return jobs;
@@ -196,7 +193,7 @@ function populateFactories( factories ) {
 			parentConfigs.forEach( parentConfig => {
 				const parentInput  = parentConfig.formula.inputs.find( input => input.itemID === factory.formula.outputs.itemID );
 				destination.num += parentConfig.scale * parentInput.num;
-			})
+			});
 
 		});
 
@@ -211,8 +208,80 @@ function populateFactories( factories ) {
 
 }
 
+function displayResults( results ) {
+
+	if ( argv._.length >= 2 && argv._[1] === 'all' ) {
+		logAll( results );
+		return;
+	}
+
+	const lines = [];
+
+	lines.push( formatCLI('YOU WANT:', 'bold,white') );
+
+	results.requests.forEach(request => {
+		const item = data.map.get(request.itemID);
+		lines.push( formatCLI('- ', 'black') + formatCLI(request.num, 'blue') + ' ' + formatCLI(item.displayName, 'red' ) );
+	});
+
+	lines.push('');
+
+	lines.push( formatCLI('YOU NEED:', 'bold,white') );
+
+	Object.keys(results.resources).forEach( itemID => {
+		const item = data.map.get(itemID);
+		const resourceNum = results.resources[itemID];
+		lines.push( formatCLI('- ', 'black') + formatCLI(resourceNum, 'blue') + ' ' + formatCLI(item.displayName, 'red' ) );
+	});
+
+	lines.push('');
+
+	// FACTORIES
+	lines.push( formatCLI('YOU BUILD:', 'bold,white') );
+
+	let factoriesTable = [];
+
+	results.factories.forEach(factory => {
+		const item     = data.map.get(factory.formula.outputs.itemID);
+		const building = data.map.get(factory.buildingID);
+		factoriesTable.push([ String(factory.scale), building.displayName, item.displayName ]);
+	});
+
+	const factoriesTableColumns = factoriesTable.reduce( (columnSizes, factory) => {
+		factory.forEach( (value, c) => {
+			columnSizes[c] = Math.max( columnSizes[c], value.length );
+		});
+		return columnSizes;
+	}, [ 0, 0, 0 ] );
+
+	factoriesTable = factoriesTable.map( factory => {
+		factory = factory.map( (value, c) => {
+			const padSize = factoriesTableColumns[c] - value.length;
+			if ( padSize ) {
+				value = [
+					[...Array(padSize)].map( () => ' ' ).join(''),
+					value
+				];
+				if ( c > 0 ) value = value.reverse();
+				value = value.join('');
+			}
+			return value;
+		});
+		return factory;
+	});
+
+	factoriesTable.forEach(factory => {
+		lines.push( formatCLI('- ', 'black') + formatCLI(factory[0], 'blue') + ' ' + formatCLI(factory[1], 'green' ) + ' ' + formatCLI( '=>', 'black' ) + ' ' + formatCLI(factory[2], 'red' ) );
+	});
+
+	lines.push('');
+	
+	console.info(lines.join("\n"));
+
+}
+
 function logAll( target ) {
-	console.log(util.inspect(target, {showHidden: false, depth: null, colors: true}))
+	console.log(util.inspect(target, {showHidden: false, depth: null, colors: true}));
 }
 
 try {
