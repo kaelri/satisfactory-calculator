@@ -3,162 +3,117 @@ entities:
     type: building
     power: 0
     formulas:
-      - input:
-          - item: coal
-            num: 15
-          - item: water
-            num: 45
-        output:
-          - item: power
-            num: 75
+      - inputs:
+          - coal: 15
+          - water: 45
+        outputs:
+          - power: 75
   - name: waterExtractor
     type: building
     power: 20
     formulas:
-      - input:
-          - item: coal
-            num: 15
-          - item: water
-            num: 45
-        output:
-          - item: water
-            num: 120
+      - inputs:
+          - coal: 15
+          - water: 45
+        outputs:
+          - water: 120
 #  - name: miner
 #    type: building
 #    power: 5
 #    formulas:
-#      - input: []
-#        output:
-#          - name: iron
-#            num: 60
+#      - inputs: []
+#        outputs:
+#         - iron: 60
   - name: miner2
     type: building
     power: 12
     formulas:
-      - input: []
-        output:
-          - item: iron
-            num: 120
+      - inputs: []
+        outputs:
+          - iron: 120
   - name: smelter
     formulas:
-      - input:
-          - item: iron
-            num: 30
-        output:
-          - item: ironIngot
-            num: 30
-      - input:
-          - item: copper
-            num: 30
-        output:
-          - item: copperIngot
-            num: 30
+      - inputs:
+          - iron: 30
+        outputs:
+          - ironIngot: 30
+      - inputs:
+          - copper: 30
+        outputs:
+          - copperIngot: 30
   - name: constructor
     type: building
     power: 4
     formulas:
-      - input:
-          - item: ironIngot
-            num: 30
-        output:
-          - item: ironPlate
-            num: 20
-      - input:
-          - item: ironIngot
-            num: 15
-        output:
-          - item: ironRod
-            num: 15
-      - input:
-          - item: ironRod
-            num: 10
-        output:
-          - item: screw
-            num: 40
-      - input:
-          - item: copperIngot
-            num: 15
-        output:
-          - item: wire
-            num: 30
-      - input:
-          - item: wire
-            num: 60
-        output:
-          - item: cable
-            num: 30
-      - input:
-          - item: copperIngot
-            num: 20
-        output:
-          - item: copperSheet
-            num: 10
-      - input:
-          - item: limestone
-            num: 45
-        output:
-          - item: concrete
-            num: 15
-      - input:
-          - item: steelIngot
-            num: 60
-        output:
-          - item: steelBeam
-            num: 15
-      - input:
-          - item: steelIngot
-            num: 30
-        output:
-          - item: steelPipe
-            num: 20
+      - inputs:
+          - ironIngot: 30
+        outputs:
+          - ironPlate: 20
+      - inputs:
+          - ironIngot: 15
+        outputs:
+          - ironRod: 15
+      - inputs:
+          - ironRod: 10
+        outputs:
+          - screw: 40
+      - inputs:
+          - copperIngot: 15
+        outputs:
+          - wire: 30
+      - inputs:
+          - wire: 60
+        outputs:
+          - cable: 30
+      - inputs:
+          - copperIngot: 20
+        outputs:
+          - copperSheet: 10
+      - inputs:
+          - limestone: 45
+        outputs:
+          - concrete: 15
+      - inputs:
+          - steelIngot: 60
+        outputs:
+          - steelBeam: 15
+      - inputs:
+          - steelIngot: 30
+        outputs:
+          - steelPipe: 20
   - name: assembler
     type: building
     power: 15
     formulas:
-      - input:
-          - item: ironPlate
-            num: 30
-          - item: screw
-            num: 60
-        output:
-          - item: reinforcedIronPlate
-            num: 5
-      - input:
-          - item: ironRod
-            num: 20
-          - item: screw
-            num: 100
-        output:
-          - item: rotor
-            num: 4
-      - input:
-          - item: reinforcedIronPlate
-            num: 3
-          - item: ironRod
-            num: 12
-        output:
-          - item: modularFrame
-            num: 2
-      - input:
-          - item: steelBeam
-            num: 24
-          - item: concrete
-            num: 30
-        output:
-          - item: encasedIndustrialBeam
-            num: 6
+      - inputs:
+          - ironPlate: 30
+          - screw: 60
+        outputs:
+          - reinforcedIronPlate: 5
+      - inputs:
+          - ironRod: 20
+          - screw: 100
+        outputs:
+          - rotor: 4
+      - inputs:
+          - reinforcedIronPlate: 3
+          - ironRod: 12
+        outputs:
+          - modularFrame: 2
+      - inputs:
+          - steelBeam: 24
+          - concrete: 30
+        outputs:
+          - encasedIndustrialBeam: 6
   - name: foundry
     type: building
     power: 16
     formulas:
-      - input:
-          - item: iron
-            num: 45
-          - item: coal
-            num: 45
-        output:
-          - item: steelIngot
-            num: 45
+      - inputs:
+          - iron: 45
+          - coal: 45
+        outputs:
+          - steelIngot: 45
   - name: power
     type: power
   - name: coal
