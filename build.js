@@ -191,7 +191,7 @@ function populateFactories( factories ) {
 			const parentConfigs = factories.filter( parent => parent.jobIDs.indexOf( destination.jobID ) !== -1 );
 			parentConfigs.forEach( parentConfig => {
 				const parentInput  = parentConfig.formula.inputs.find( input => input.itemID === factory.formula.outputs.itemID );
-				destination.num += parentConfig.scale * parentInput.num;
+				destination.num += ( parentConfig.scale || 1 ) * parentInput.num;
 			});
 
 		});
