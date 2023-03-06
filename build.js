@@ -261,13 +261,13 @@ function displayResults( results ) {
 	results.factories.forEach(factory => {
 		const item     = data.map.get(factory.formula.outputs.itemID);
 		const building = data.map.get(factory.buildingID);
-		factoriesTable.push([ factory.scale, building.displayName, item.displayName ]);
+		factoriesTable.push([ factory.scale, building.displayName, ( factory.formula.outputs.num * factory.scale ), item.displayName ]);
 	});
 
-	factoriesTable = spaceTableColumns( factoriesTable, [ 'right', 'left', 'left' ] );
+	factoriesTable = spaceTableColumns( factoriesTable, [ 'right', 'left', 'right', 'left' ] );
 
 	factoriesTable.forEach(factory => {
-		lines.push( formatCLI('- ', 'black') + formatCLI(factory[0], 'blue,bold') + ' ' + formatCLI(factory[1], 'green' ) + ' ' + formatCLI( '➜', 'black' ) + ' ' + formatCLI(factory[2], 'red' ) );
+		lines.push( formatCLI('- ', 'black') + formatCLI(factory[0], 'blue') + ' ' + formatCLI(factory[1], 'green' ) + ' ' + formatCLI( '➜', 'black' ) + ' ' + formatCLI(factory[2], 'blue') + ' ' + formatCLI(factory[3], 'red' ) );
 	});
 
 	lines.push('');
