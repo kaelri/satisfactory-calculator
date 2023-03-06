@@ -191,7 +191,7 @@ function populateFactories( factories ) {
 			const parentConfigs = factories.filter( parent => parent.jobIDs.indexOf( destination.jobID ) !== -1 );
 			parentConfigs.forEach( parentConfig => {
 				const parentInput  = parentConfig.formula.inputs.find( input => input.itemID === factory.formula.outputs.itemID );
-				destination.num += parentConfig.scale * parentInput.num;
+				destination.num += ( parentConfig.scale || 1 ) * parentInput.num;
 			});
 
 		});
@@ -229,7 +229,7 @@ function displayResults( results ) {
 	resultsTable = spaceTableColumns( resultsTable, [ 'right', 'left' ] );
 
 	resultsTable.forEach(request => {
-		lines.push( formatCLI('- ', 'black') + formatCLI(request[0], 'blue') + ' ' + formatCLI(request[1], 'red' ) );
+		lines.push( formatCLI('- ', 'black') + formatCLI(request[0], 'blue,bold') + ' ' + formatCLI(request[1], 'red' ) );
 	});
 
 	lines.push('');
@@ -248,7 +248,7 @@ function displayResults( results ) {
 	resourcesTable = spaceTableColumns( resourcesTable, [ 'right', 'left' ] );
 
 	resourcesTable.forEach( resource => {
-		lines.push( formatCLI('- ', 'black') + formatCLI(resource[0], 'blue') + ' ' + formatCLI(resource[1], 'red' ) );
+		lines.push( formatCLI('- ', 'black') + formatCLI(resource[0], 'blue,bold') + ' ' + formatCLI(resource[1], 'red' ) );
 	});
 
 	lines.push('');
@@ -267,7 +267,7 @@ function displayResults( results ) {
 	factoriesTable = spaceTableColumns( factoriesTable, [ 'right', 'left', 'left' ] );
 
 	factoriesTable.forEach(factory => {
-		lines.push( formatCLI('- ', 'black') + formatCLI(factory[0], 'blue') + ' ' + formatCLI(factory[1], 'green' ) + ' ' + formatCLI( '➜', 'black' ) + ' ' + formatCLI(factory[2], 'red' ) );
+		lines.push( formatCLI('- ', 'black') + formatCLI(factory[0], 'blue,bold') + ' ' + formatCLI(factory[1], 'green' ) + ' ' + formatCLI( '➜', 'black' ) + ' ' + formatCLI(factory[2], 'red' ) );
 	});
 
 	lines.push('');

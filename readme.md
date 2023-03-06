@@ -35,3 +35,6 @@ encasedIndustrialBeam: 5
 ### Output
 
 ![image](docs/screenshot_example.png)
+
+## How It Works
+
